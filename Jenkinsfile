@@ -1,9 +1,9 @@
 pipeline {
     agent any
     stages {
-        stage('Lint HTML') {
+        stage('ESLinter') {
               steps {
-                  sh 'tidy -q -e *.html'
+                  sh 'npx eslint index.js'
               }
         }
     }
