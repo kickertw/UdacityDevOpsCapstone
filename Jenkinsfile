@@ -8,7 +8,7 @@ pipeline {
         }
         stage('Hadolint Dockerfile') {
             steps {
-                sh 'hadolint Dockerfile'
+                sh 'hadolint --ignore DL4000 Dockerfile'
             }
         }
     }
