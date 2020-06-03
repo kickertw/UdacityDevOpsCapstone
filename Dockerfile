@@ -1,4 +1,5 @@
 FROM node:10
+MAINTAINER Tim Wong <timwongdev@gmail.com>
 
 WORKDIR /app
 
