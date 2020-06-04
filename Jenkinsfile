@@ -1,7 +1,7 @@
 pipeline {
   environment {
     registry = 'k1ck3rtw/udacity-capstone'
-    registryCredential = 'dockerhub_id'
+    registryCredential = 'DockerHub_Id'
   }
   agent any
   stages {
