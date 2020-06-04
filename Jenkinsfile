@@ -1,7 +1,7 @@
 pipeline {
   environment {
     registry = 'k1ck3rtw/udacity-capstone'
-    registryCredential = 'DockerHub_Id'
+    registryCredential = 'dockerhub_id'
   }
   agent any
   stages {
@@ -25,7 +25,7 @@ pipeline {
     stage('Deploy our image') {
       steps{
         script {
-          docker.withRegistry( '', registryCredential ) {
+          docker.withRegistry('', registryCredential ) {
             dockerImage.push()
           }
         }
