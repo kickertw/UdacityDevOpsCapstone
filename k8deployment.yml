@@ -1,0 +1,19 @@
+apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
+kind: Deployment
+metadata:
+  name: tw-capstone-deployment
+spec:
+  selector:
+    matchLabels:
+      app: expressApp
+  replicas: 2 # tells deployment to run 2 pods matching the template
+  template:
+    metadata:
+      labels:
+        app: expressApp
+    spec:
+      containers:
+      - name: expressApp
+        image: k1ck3rtw/udacity-capstone
+        ports:
+        - containerPort: 8080
