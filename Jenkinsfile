@@ -2,7 +2,7 @@ pipeline {
   environment {
     registry = 'k1ck3rtw/udacity-capstone'
     registryCredential = 'dockerhub_id'
-    awsCredential = 'aws'
+    awsCredential = 'awsjenkins_id'
   }
   agent any
   stages {
@@ -36,9 +36,10 @@ pipeline {
     stage('Deploy to AWS EKS Cluster') {
       steps {
         dir('k8') {
-            withAWS(credentials: 'aws-credentials', region: 'us-east-2') {
-                sh "aws eks --region us-east-2 update-kubeconfig --name tw-capstone"
-                sh 'kubectl apply -f deployment.yml'
+            withAWS(credentials: awsCredential, region: 'us-east-1') {
+                sh "aws eks --region us-east-1 update-kubeconfig --name capstone"
+                sh 'kubectl apply -f cap-app-deploy.yml'
+                sh 'kubectl apply -f load-balancer.yml'
               }
             }        
       }
