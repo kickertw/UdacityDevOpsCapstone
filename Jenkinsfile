@@ -37,7 +37,7 @@ pipeline {
       steps {
         dir('k8') {
             withAWS(credentials: awsCredential, region: 'us-east-1') {
-                sh "aws eks --region us-east-1 update-kubeconfig --name capstone"
+                sh "aws eks --region us-east-1 update-kubeconfig --name capstone-eks"
                 sh 'kubectl apply -f cap-app-deploy.yml'
                 sh 'kubectl apply -f load-balancer.yml'
               }
