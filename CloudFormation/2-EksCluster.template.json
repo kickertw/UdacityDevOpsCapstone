@@ -14,7 +14,7 @@
     },
     "EksClusterName": {
       "Type": "String",
-      "Default": "capstone",
+      "Default": "capstone-eks",
       "Description": "The name for your EKS cluster"
     }
   },
