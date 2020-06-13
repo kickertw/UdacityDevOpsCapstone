@@ -1,0 +1,93 @@
+{
+  "AWSTemplateFormatVersion": "2010-09-09",
+  "Description": "AWS EKS cluster creation",
+  "Mappings": {
+      "ServicePrincipals": {
+          "aws": {
+              "ec2": "ec2.amazonaws.com"
+          }
+      }
+  },
+  "Parameters": {
+    "EksVPCStackParam": {
+      "Type": "String"
+    },
+    "EksClusterName": {
+      "Type": "String",
+      "Default": "capstone",
+      "Description": "The name for your EKS cluster"
+    }
+  },
+  "Resources": {
+    "MyCluster": {
+      "Type": "AWS::EKS::Cluster",
+      "Properties": {
+          "Name": { "Ref": "EksClusterName" },
+          "Version": "1.16",
+          "RoleArn": {  
+            "Fn::ImportValue": {
+              "Fn::Sub": "${EksVPCStackParam}-ClusterRoleArn"
+            }
+          },
+          "ResourcesVpcConfig": {
+              "SecurityGroupIds": [
+                {
+                  "Fn::ImportValue": {
+                    "Fn::Sub": "${EksVPCStackParam}-ControlPlaneSecurityGroupId"
+                  }
+                }
+              ],
+              "SubnetIds": {
+                "Fn::Split" : [ ",",
+                  {
+                    "Fn::ImportValue": {
+                      "Fn::Sub": "${EksVPCStackParam}-EksSubnetIds"
+                    }
+                  }
+                ]
+              }
+          }
+      }
+    },
+    "EKSNodegroup": {
+      "Type": "AWS::EKS::Nodegroup",
+      "Properties": {
+        "ClusterName": { "Ref": "EksClusterName" },
+        "NodeRole": {
+          "Fn::ImportValue": {
+            "Fn::Sub": "${EksVPCStackParam}-NodeInstanceRoleArn"
+          }
+        },
+        "ScalingConfig": {
+            "MinSize": 1,
+            "DesiredSize": 2,
+            "MaxSize": 2
+        },
+        "Labels": {
+            "app": "cap-app"
+        },
+        "Subnets": {
+          "Fn::Split" : [ ",",
+            {
+              "Fn::ImportValue": {
+                "Fn::Sub": "${EksVPCStackParam}-EksSubnetIds"
+              }
+            }
+          ]
+        }
+      },
+      "DependsOn": "MyCluster"
+    }
+  },
+  "Outputs": {
+      "NodeInstanceRole": {
+          "Description": "The eks cluster",
+          "Value": {
+              "Fn::GetAtt": [
+                  "MyCluster",
+                  "Arn"
+              ]
+          }
+      }
+  }
+}

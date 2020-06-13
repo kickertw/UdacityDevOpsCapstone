@@ -1,6 +1,13 @@
 {
     "AWSTemplateFormatVersion": "2010-09-09",
-    "Description": "Amazon EKS VPC - Public subnets only",
+    "Description": "VPC for the AWS EKS Cluster - 2 Public subnets and all needed EKS IAM roles",
+    "Mappings": {
+        "ServicePrincipals": {
+            "aws": {
+                "ec2": "ec2.amazonaws.com"
+            }
+        }
+    },    
     "Parameters": {
         "VpcBlock": {
             "Type": "String",
@@ -35,6 +42,71 @@
         }
     },
     "Resources": {
+        "EksClusterRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    "eks.amazonaws.com"
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    "arn:aws:iam::aws:policy/AmazonEKSClusterPolicy"
+                ]
+            }
+        },
+        "NodeInstanceRole": {
+            "Type": "AWS::IAM::Role",
+            "Properties": {
+                "AssumeRolePolicyDocument": {
+                    "Version": "2012-10-17",
+                    "Statement": [
+                        {
+                            "Effect": "Allow",
+                            "Principal": {
+                                "Service": [
+                                    {
+                                        "Fn::FindInMap": [
+                                            "ServicePrincipals",
+                                            {
+                                                "Ref": "AWS::Partition"
+                                            },
+                                            "ec2"
+                                        ]
+                                    }
+                                ]
+                            },
+                            "Action": [
+                                "sts:AssumeRole"
+                            ]
+                        }
+                    ]
+                },
+                "ManagedPolicyArns": [
+                    {
+                        "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/AmazonEKSWorkerNodePolicy"
+                    },
+                    {
+                        "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/AmazonEKS_CNI_Policy"
+                    },
+                    {
+                        "Fn::Sub": "arn:${AWS::Partition}:iam::aws:policy/AmazonEC2ContainerRegistryReadOnly"
+                    }
+                ],
+                "Path": "/"
+            }
+        },
         "VPC": {
             "Type": "AWS::EC2::VPC",
             "Properties": {
@@ -205,6 +277,34 @@
         }
     },
     "Outputs": {
+        "ClusterRoleArn": {
+            "Description": "The cluster role that Amazon EKS will use to create AWS resources for Kubernetes clusters",
+            "Value": {
+                "Fn::GetAtt": [
+                    "EksClusterRole",
+                    "Arn"
+                ]
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "${AWS::StackName}-ClusterRoleArn"
+                }
+            }
+        },
+        "NodeInstanceRole": {
+            "Description": "The worker node instance role",
+            "Value": {
+                "Fn::GetAtt": [
+                    "NodeInstanceRole",
+                    "Arn"
+                ]
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "${AWS::StackName}-NodeInstanceRoleArn"
+                }
+            }
+        },
         "SubnetIds": {
             "Description": "All subnets in the VPC",
             "Value": {
@@ -219,6 +319,11 @@
                         }
                     ]
                 ]
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "${AWS::StackName}-EksSubnetIds"
+                }
             }
         },
         "SecurityGroups": {
@@ -232,6 +337,11 @@
                         }
                     ]
                 ]
+            },
+            "Export": {
+                "Name": {
+                    "Fn::Sub": "${AWS::StackName}-ControlPlaneSecurityGroupId"
+                }
             }
         },
         "VpcId": {

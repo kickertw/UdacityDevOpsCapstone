@@ -1,19 +1,24 @@
 apiVersion: apps/v1 # for versions before 1.9.0 use apps/v1beta2
 kind: Deployment
 metadata:
-  name: tw-capstone-deployment
+  name: capstone
 spec:
   selector:
     matchLabels:
-      app: expressApp
+      app: cap-app
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 1      
   replicas: 2 # tells deployment to run 2 pods matching the template
   template:
     metadata:
       labels:
-        app: expressApp
+        app: cap-app
     spec:
       containers:
-      - name: expressApp
-        image: k1ck3rtw/udacity-capstone
+      - name: cap-app
+        image: k1ck3rtw/udacity-capstone:9
         ports:
         - containerPort: 8080
