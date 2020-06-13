@@ -17,8 +17,10 @@ spec:
       labels:
         app: cap-app
     spec:
+      terminationGracePeriodSeconds: 30
       containers:
       - name: cap-app
         image: k1ck3rtw/udacity-capstone:latest
+        imagePullPolicy: "Always"
         ports:
         - containerPort: 8080
